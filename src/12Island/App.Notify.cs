@@ -127,13 +127,25 @@ public partial class App
     internal IntPtr NotifyWindow(string program) => _taskbarWatch?.WindowOf(program) ?? IntPtr.Zero;
 
     // The capsule was clicked: the program that announced the newest unread notice comes up in front. Which of its notices
-    // that counted as read is the caller's to say — one notice, not the program's whole list and not everyone's.
+    // that counted as read is the caller's to say — one notice, not the program's whole list and not everyone's. A mail
+    // notice whose client is not running has no window to bring up: the click itself is the answer — the caller reads the
+    // notices, the reminder ends here, and no mail program is started in its place.
     internal bool OpenNotifyApp(string program)
     {
         if (Notices is null) return false;
-        if (!AppActivate.Open(program, _taskbarWatch?.WindowOf(program) ?? IntPtr.Zero)) return false;
+        bool opened = AppActivate.Open(program, _taskbarWatch?.WindowOf(program) ?? IntPtr.Zero);
+        if (!opened && !IsMail(program)) return false;
         CancelTimer(program);
         return true;
+    }
+
+    // Whether a notice's program is mail at all: the mailbox read over IMAP, or one of the mail clients the page watches.
+    private static bool IsMail(string program)
+    {
+        if (program == NotifyPrograms.MailKey) return true;
+        foreach (var candidate in NotifyPrograms.All)
+            if (candidate.Key == program && candidate.Source == NotifySource.Mail) return true;
+        return false;
     }
 
     // Asks the mailbox once now, for the page's "立即检查" button.

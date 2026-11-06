@@ -59,14 +59,12 @@ public partial class MainWindow : Window
     private VirtualDesktopPresence? _virtualDesktops;
     private EscapeDismissal? _escapeDismissal;
     private bool _expanded, _refreshing, _preview, _refreshRequested, _pointerInside;
-    // Held open by the panel's own "悬停" button: neither the five-second timer nor the pointer leaving closes it until "收起".
+    // Held open by the panel's own "展开" button: neither the five-second timer nor the pointer leaving closes it until "收起".
     private bool _pinned;
-    // An expanded panel closes on its own five seconds after opening (unless held, pinned by the hotkey, or a settings preview).
+    // An expanded panel closes on its own five seconds after the pointer leaves it (unless held, pinned by the hotkey, or a
+    // settings preview).
     private DispatcherTimer? _autoClose;
     private const int AutoCollapseMs = 5000;
-    // Whether the five-second auto close is running: while it is, it alone ends the stay — the pointer leaving, or the cursor's
-    // exit check, must not close the panel before its five seconds are up (a triggered panel stays five seconds, then collapses).
-    private bool AutoClosing => _autoClose is { IsEnabled: true };
     // A preview from the settings window either holds the panel open or keeps it collapsed while a collapsed size is adjusted.
     private bool _previewExpanded;
     private Rect? _popupReturnArea;
@@ -305,8 +303,11 @@ public partial class MainWindow : Window
         RenderCompact();
         // Hiding and showing again (the tray, a full-screen rule) are immediate. The boot plays only when the panel first
         // appears (Loaded); the power-off only when TwelveIsland exits (App.ExitApplication).
-        // The window's own opacity is no longer animated; a build that faded it may have left it lowered.
-        if (Opacity < 1) { BeginAnimation(OpacityProperty, null); Opacity = 1; }
+        // The window's own opacity is the shell opacity (ShellOpacity). A build that faded the window may have left it
+        // lowered, so the setting — not a bare 1 — is what the window takes here, on every re-layout.
+        double shellOpacity = Math.Clamp(Settings.ShellOpacity, .6, 1);
+        BeginAnimation(OpacityProperty, null);
+        Opacity = shellOpacity;
         if (IsSuppressed)
         {
             _hover.Stop(); _leave.Stop(); _pointerInside = false;
@@ -851,13 +852,15 @@ public partial class MainWindow : Window
         UpdateMusicTimer();
         UpdateMonitorDemand();
         UpdateGrips();
-        // A newly opened panel waits ten seconds, then closes on its own; a page switch while already open does not reset it, and
-        // a held or preview panel never starts it. Closing clears the hold and brings the capsule reminder back if notices remain.
+        // A newly opened panel closes on its own five seconds after the pointer leaves it; a panel opened while the pointer
+        // rests on it (hover or a click) is held by that pointer instead, and its countdown starts when the pointer leaves.
+        // A page switch while already open does not reset this, and a held or preview panel never starts it. Closing clears
+        // the hold and brings the capsule reminder back if notices remain.
         RefreshCapsuleAttention();
         UpdatePinControls();
         if (_expanded && !wasExpanded)
         {
-            if (!_preview && !IsHotkeyPinned && !_pinned) StartAutoCollapse();
+            if (!_preview && !IsHotkeyPinned && !_pinned && !_pointerInside) StartAutoCollapse();
             else StopAutoCollapse();
         }
         else if (!_expanded)
@@ -865,7 +868,7 @@ public partial class MainWindow : Window
             StopAutoCollapse();
         }
     }
-    // The panel closes itself ten seconds after opening, unless held, pinned by the hotkey, or a settings preview.
+    // The panel closes itself five seconds after the pointer leaves it, unless held, pinned by the hotkey, or a preview.
     private void StartAutoCollapse()
     {
         _autoClose ??= new DispatcherTimer(DispatcherPriority.Background, Dispatcher) { Interval = TimeSpan.FromMilliseconds(AutoCollapseMs) };
@@ -876,18 +879,19 @@ public partial class MainWindow : Window
     }
     private void OnAutoCollapse(object? _, EventArgs _e)
     {
-        if (_pinned || IsHotkeyPinned || _preview) { StopAutoCollapse(); return; }
+        // The pointer came back over the panel without an entry event: the stay continues while it rests there.
+        if (_pointerInside || _pinned || IsHotkeyPinned || _preview) { StopAutoCollapse(); return; }
         SetExpanded(false);
     }
     private void StopAutoCollapse() => _autoClose?.Stop();
 
-    // The panel's own hold and collapse controls (PanelPinBar in the XAML). "悬停" toggles a hold that keeps the panel open past
+    // The panel's own hold and collapse controls (PanelPinBar in the XAML). "展开" toggles a hold that keeps the panel open past
     // the ten-second timer and past the pointer leaving it; "收起" collapses at once and releases the hold.
     private void PinKeep_Click(object sender, RoutedEventArgs e)
     {
         _pinned = !_pinned;
         if (_pinned) StopAutoCollapse();
-        else if (_expanded && !_preview && !IsHotkeyPinned) StartAutoCollapse();
+        else if (_expanded && !_preview && !IsHotkeyPinned && !_pointerInside) StartAutoCollapse();
         UpdatePinControls();
     }
     private void PinCollapse_Click(object sender, RoutedEventArgs e)
@@ -994,7 +998,10 @@ public partial class MainWindow : Window
         if (inside)
         {
             _popupReturnArea = null;
-            _leave.Stop(); if (_expanded || IsSuppressed) return;
+            _leave.Stop();
+            // A pointer resting on the open panel holds it: the auto close waits until the pointer leaves it.
+            if (_expanded) StopAutoCollapse();
+            if (IsSuppressed) return;
             // The capsule is a button, not a hover surface: a pointer resting on it opens nothing, and a click brings the
             // announcing program up (OpenNoticeApp) rather than opening the panel. Every other collapsed style keeps
             // opening on hover.
@@ -1005,19 +1012,19 @@ public partial class MainWindow : Window
         else
         {
             _hover.Stop(); if (!_expanded || _preview || _pageSwitchHold.IsEnabled || _detailPopup is not null || MediaSourceButton.ContextMenu?.IsOpen == true) return;
-            // Held open by the panel's own "悬停" button: the pointer leaving does not close it; only "收起" does.
+            // Held open by the panel's own "展开" button: the pointer leaving does not close it; only "收起" does.
             if (_pinned) { _leave.Stop(); return; }
-            // Within the ten-second stay the auto close owns the ending: the pointer leaving does not close the panel early.
-            if (AutoClosing) { _leave.Stop(); return; }
-            int delay = Math.Max(_popupReturnArea is null ? 1 : 50, Settings.CloseDelay);
+            // The pointer has left the panel: its hold on the panel ends, and the five-second auto close takes over.
             _leftAt = Environment.TickCount64;
-            _leave.Stop(); _leave.Interval = TimeSpan.FromMilliseconds(delay); _leave.Start();
+            _leave.Stop();
+            StartAutoCollapse();
         }
     }
     internal void CheckPointerExit(Point screenPoint)
     {
-        // The ten-second stay outranks the exit check: while it runs, only its timer (or "收起") ends the panel.
-        if (IsHotkeyPinned || Resizing || _pinned || AutoClosing) { _leave.Stop(); return; }
+        // Held panels and the pointer's own stay outrank the exit check: while the pointer is over the panel, or the panel is
+        // held, nothing here closes it.
+        if (IsHotkeyPinned || Resizing || _pinned || _pointerInside) { _leave.Stop(); return; }
         if (_pointerInside || _preview || _pageSwitchHold.IsEnabled || _detailPopup is not null || MediaSourceButton.ContextMenu?.IsOpen == true) { _leave.Stop(); return; }
         // Closing a calendar with either button must leave a path back to the results.
         // Keep checking until the cursor leaves that area; entering the island restores normal hover behavior.
@@ -1026,7 +1033,11 @@ public partial class MainWindow : Window
         if (_expanded && InsideOpenPanel(screenPoint)) { PointerChanged(true); return; }
         // Still just past a resize grip: the pointer is most likely coming back to it. The panel waits, but not for long.
         if (_expanded && NearGrips(screenPoint) && Environment.TickCount64 - _leftAt < GripHold) { _leave.Stop(); _leave.Interval = TimeSpan.FromMilliseconds(120); _leave.Start(); return; }
-        _leave.Stop(); SetExpanded(false);
+        // The pointer is truly away from the panel: the expanded one now starts its five-second auto close, the collapsed
+        // one simply closes.
+        _leave.Stop();
+        if (_expanded && !_preview) StartAutoCollapse();
+        else SetExpanded(false);
     }
     private void Settings_Click(object sender, RoutedEventArgs e)
     {

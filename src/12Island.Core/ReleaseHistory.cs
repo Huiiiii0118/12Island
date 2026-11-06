@@ -28,9 +28,9 @@ public static partial class ReleaseHistory
         return new ReleaseNotes(entries);
     }
 
-    // The versions the window lists, newest first: every release up to this one. Alphas are never listed. Betas are listed
-    // only with beta updates on (AppUpdates.Beta), and only those newer than the last release: a release gathers the notes
-    // of the betas before it.
+    // The versions the window lists, newest first: the three newest releases up to this one. Alphas are never listed.
+    // Betas are listed only with beta updates on (AppUpdates.Beta), and only those newer than the last release: a release
+    // gathers the notes of the betas before it.
     public static IReadOnlyList<ReleaseEntry> Shown(IEnumerable<ReleaseEntry> entries, string current, bool beta)
     {
         var order = Comparer<string>.Create(ApplicationVersion.Compare);
@@ -38,7 +38,7 @@ public static partial class ReleaseHistory
         var lastRelease = known.Where(e => !ApplicationVersion.IsPrerelease(e.Version)).Select(e => e.Version).Max(order);
         return known.Where(e => !ApplicationVersion.IsPrerelease(e.Version) ||
                 beta && IsBeta(e.Version) && (lastRelease is null || ApplicationVersion.Compare(e.Version, lastRelease) > 0))
-            .OrderByDescending(e => e.Version, order).ToList();
+            .OrderByDescending(e => e.Version, order).Take(3).ToList();
     }
 
     private static bool IsBeta(string version) => version.Split('+')[0].Contains("-beta.", StringComparison.OrdinalIgnoreCase);

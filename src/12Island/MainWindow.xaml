@@ -153,10 +153,10 @@
                 </StackPanel>
               </Grid>
           </Grid>
-          <!-- 展开面板右下角的「悬停」(保持展开) 与「收起」(立即收起) 控制；仅展开时可见（要求 2/3）。 -->
+          <!-- 展开面板右下角的「展开」(保持展开) 与「收起」(立即收起) 控制；仅展开时可见（要求 2/3）。 -->
           <Grid x:Name="PanelPinBar" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,10,10" Visibility="Collapsed" IsHitTestVisible="True">
             <StackPanel Orientation="Horizontal">
-              <Button x:Name="PinKeepButton" Click="PinKeep_Click" Style="{StaticResource PanelTextButton}" Content="悬停" ToolTip="保持展开，直到点击「收起」"/>
+              <Button x:Name="PinKeepButton" Click="PinKeep_Click" Style="{StaticResource PanelTextButton}" Content="展开" ToolTip="保持面板展开，直到点击「收起」"/>
               <Button x:Name="PinCollapseButton" Click="PinCollapse_Click" Style="{StaticResource PanelTextButton}" Content="收起" Margin="6,0,0,0" ToolTip="立即收起面板"/>
             </StackPanel>
           </Grid>

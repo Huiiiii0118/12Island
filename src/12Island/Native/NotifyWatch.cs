@@ -86,11 +86,24 @@ internal sealed class NotifyWatch : IDisposable
         _ => settings.NotifyApps
     };
 
-    // The mailbox is asked only with an address and its password; a look still running keeps the next one waiting.
+    // The mailbox is asked only with an address and its password; a look still running keeps the next one waiting. A check
+    // without what it needs says so, rather than leaving the page's status line claiming the mailbox is being watched.
     private void PollMail()
     {
         var settings = _settings();
-        if (!settings.NotifyMail || settings.NotifyMailUser.Length == 0 || _mailBusy || _disposed) return;
+        if (!settings.NotifyMail)
+        {
+            MailError = Loc.T("邮箱通知未开启，请在设置中打开", "Mail notifications are off; turn them on in settings");
+            MailStateChanged?.Invoke();
+            return;
+        }
+        if (settings.NotifyMailUser.Length == 0)
+        {
+            MailError = Loc.T("尚未填写邮箱地址", "No mailbox address yet");
+            MailStateChanged?.Invoke();
+            return;
+        }
+        if (_mailBusy || _disposed) return;
         string password = MailSecret.Read();
         if (password.Length == 0) { MailError = Loc.T("尚未填写授权码", "No password yet"); MailStateChanged?.Invoke(); return; }
         _mailBusy = true; MailStateChanged?.Invoke();

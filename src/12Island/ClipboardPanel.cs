@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using TwelveIsland.Core;
 
 namespace TwelveIsland;
@@ -18,6 +19,8 @@ public partial class MainWindow
     private bool _clipFavoritesOnly;
     private Guid? _clipEditing;
     private string _clipStatus = "";
+    // Clears the "copied back" hint a few seconds after it appears, so the line returns to its usual instruction.
+    private DispatcherTimer? _clipStatusTimer;
 
     private void InitializeClipboard()
     {
@@ -283,6 +286,18 @@ public partial class MainWindow
             : Loc.T("已复制回剪贴板", "Copied back to the clipboard");
         _clipBuilt = "";
         RenderClipboard();
+        // The copied hint says its piece and steps aside five seconds later, so the line reads the usual instruction again.
+        _clipStatusTimer ??= new DispatcherTimer { Interval = TimeSpan.FromSeconds(5) };
+        _clipStatusTimer.Tick -= ClipStatusExpired;
+        _clipStatusTimer.Tick += ClipStatusExpired;
+        _clipStatusTimer.Stop();
+        _clipStatusTimer.Start();
+    }
+    private void ClipStatusExpired(object? _, EventArgs _e)
+    {
+        _clipStatusTimer?.Stop();
+        _clipStatus = "";
+        if (IsClipboardPage && _expanded) { _clipBuilt = ""; RenderClipboard(); }
     }
 
     // A small button with a symbol, the size of a line of text; it does not take the row's click.

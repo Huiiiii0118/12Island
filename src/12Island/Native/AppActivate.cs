@@ -3,8 +3,9 @@ using System.Runtime.InteropServices;
 
 namespace TwelveIsland.Native;
 
-// Brings a program's window up from the collapsed island: the window that flashed for it, else its main window, else — for a
-// mailbox with no client running — the mail program the system answers with.
+// Brings a program's window up from the collapsed island: the window that flashed for it, else its main window. A mailbox
+// that has no client running has no window to bring up — the caller then reads the notice and ends the capsule itself, and
+// no mail program is started for it.
 internal static class AppActivate
 {
     public static bool Open(string program, IntPtr known)
@@ -22,14 +23,7 @@ internal static class AppActivate
                 finally { process.Dispose(); }
             }
         }
-        // A mailbox read over IMAP needs no client of its own: the system's mail program stands in, and says so if there is none.
-        if (program != NotifyPrograms.MailKey && !MailPrograms.Contains(program)) return false;
-        try
-        {
-            Process.Start(new ProcessStartInfo("mailto:") { UseShellExecute = true });
-            return true;
-        }
-        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException or System.IO.FileNotFoundException) { return false; }
+        return false;
     }
 
     // The processes a program runs under; the mailbox itself answers with every mail program it knows.
@@ -39,9 +33,6 @@ internal static class AppActivate
         var names = NotifyPrograms.Processes(program);
         return names.Length > 0 ? names : [program];
     }
-
-    private static readonly HashSet<string> MailPrograms =
-        new(["outlook", "foxmail", "thunderbird", "mailmaster", "qqmail"], StringComparer.Ordinal);
 
     // Restores a minimised window and puts it in front. A window the user did not just click on cannot always take the
     // foreground on its own, so the switch is asked for twice, the second time through the shell's own path. The island is a

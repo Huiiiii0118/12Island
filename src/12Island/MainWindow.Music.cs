@@ -1041,11 +1041,11 @@ public partial class MainWindow
     // The panel closed: the collapsed title scrolls its laps again, as the row comes back into view. (Reaching the island
     // opens the panel, so the collapsed title is not seen while the pointer is on it.)
     private void ReplayCompactTitle() { _compactTitleRested = null; _compactMarquee?.Replay(); }
-    // The collapsed row: the middle block — the volume's rhythm with the title or lyric right beside it — takes the
+    // The collapsed row: the middle block — the cover, the title or lyric, and the volume's rhythm read as one line — takes the
     // surface's centre for the rhythm itself, and the sides' difference flows into the text's room, so both end margins read
     // alike and the rhythm never strays from the middle while the row still fits what each side holds. The system readings
     // are split around the block, the first ones on the left, at the reading that keeps the two sides as even as whole
-    // readings allow; the cover keeps the left edge and the clock the right. Each reading is a strip of its own, placed
+    // readings allow; the clock keeps the right. Each reading is a strip of its own, placed
     // whole, so a side too narrow for one leaves it out rather than cutting it. Without a block (no rhythm, no text) the
     // parts stand centred as a whole.
     private void RenderCompactMusic()
@@ -1100,7 +1100,10 @@ public partial class MainWindow
         }
         _compactStrip = strips.FirstOrDefault();
         // The middle block: the title or lyric and the rhythm read as one line, the text right beside the rhythm.
-        double shortest = CompactMusicLayout.Whole(CompactMusicLayout.MinimumText * scale);
+        // The scrolling text's visible window is ten characters wide (滚动显示 10 字符): a whole CJK glyph is one em, so the
+        // window is ten ems of the row's type size; every slot floor below takes it, and the surface's own least width
+        // follows through `required`.
+        double shortest = CompactMusicLayout.Whole(CompactMusicLayout.RowFont * 10 * scale);
         double eqW = equalizer ? layout.EqualizerSize : 0;
         // The room the text may take at most: the length a long title or lyric scrolls in, no more than the row can spare it.
         double slotW = hasText ? Math.Max(shortest, Math.Min(CompactMusicLayout.Whole(CompactMusicLayout.TextSlot * scale), Math.Max(shortest, contentWidth * .4))) : 0;
@@ -1120,12 +1123,11 @@ public partial class MainWindow
         bool readingsLeft = At(CompactPart.Monitor) < blockEnd, clockLeft = clock is not null && At(CompactPart.Clock) < blockStart;
         double LeftSpan(int count) => readingsLeft ? Span(0, count) : Span(count, n - count);
         double RightSpan(int count) => readingsLeft ? Span(count, n - count) : Span(0, count);
-        // The width one side takes with count readings on the side the order starts them: the cover, the readings and the clock,
-        // one gap between them.
+        // The width one side takes with count readings on the side the order starts them: the readings and the clock, one
+        // gap between them. The cover takes no lane any more — it stands inside the middle block, at the rhythm's left.
         double Lane(int count, bool left)
         {
             double total = 0; int blocks = 0;
-            if (left && hasCover) { total += coverW; blocks++; }
             double readings = left ? LeftSpan(count) : RightSpan(count);
             if (readings > 0) { total += readings; blocks++; }
             if (clock is not null && clockLeft == left) { total += clockW; blocks++; }
@@ -1152,11 +1154,11 @@ public partial class MainWindow
         bool textRight = hasText && eqW > 0 && balance < 0;
         double slot = !hasText ? 0 : eqW <= 0 ? slotW
             : Math.Max(shortest, Math.Min(slotW, Math.Max(shortest, Math.Abs(balance) - innerGap)));
-        double blockW = slot + innerGap + eqW;
+        double blockW = (hasCover ? coverW + unit : 0) + slot + innerGap + eqW;
         bool hasBlock = blockW > 0;
         // The block on the centre takes twice the wider side: neither side gives way to it, and it stands in the middle.
         double wanted = hasBlock ? 2 * Math.Max(leftNeed, rightNeed) + blockW + 2 * unit : leftNeed + rightNeed;
-        double required = blockW + 2 * Math.Max(coverW, clockW) + 2 * unit;
+        double required = blockW + 2 * clockW + 2 * unit;
         // The waiting programs' pill is the widest thing the row shows, so it keeps the width it asked for until it goes; the
         // music's own width is taken again once the notices are read (NotifyPanel.SyncNotice drops the capsule's shape).
         if (_noticeStyle is null && (double.IsNaN(_compactWanted) || Math.Abs(wanted - _compactWanted) > .5 || Math.Abs(required - _compactRequired) > .5))
@@ -1189,8 +1191,16 @@ public partial class MainWindow
             // leaves the text room — the rhythm lands on the bar's exact centre (律动条在收起栏正中). Any surplus splits half
             // to each edge.
             double blockLeft = Math.Round(w / 2 + (leftNeed - rightNeed) / 2 - blockW / 2), blockRight = blockLeft + blockW;
-            double eqLeft = textRight ? blockLeft : blockLeft + slot + innerGap;
-            double textLeft = textRight ? blockLeft + eqW + innerGap : blockLeft;
+            // The cover opens the block, at the rhythm's left (封面在律动条左边); the text keeps the side that balances the row.
+            double afterCover = hasCover ? coverW + unit : 0;
+            double eqLeft = textRight ? blockLeft + afterCover : blockLeft + afterCover + slot + innerGap;
+            double textLeft = textRight ? blockLeft + afterCover + eqW + innerGap : blockLeft + afterCover;
+            if (hasCover)
+            {
+                var cover = MusicVisuals.Cover(_mediaCover, layout.CoverSize, layout.CoverRadius);
+                AutomationProperties.SetName(cover, _mediaTrack!.Caption);
+                Place(CompactRegion(cover, coverW, coverW, coverW, row, RegionAnchor.Left, dpi), blockLeft);
+            }
             if (hasText)
                 Place(CompactRegion(_compactMarquee = CompactTitle(text, slot, layout, against: !textRight), slot, slot, layout.TextHeight, row, RegionAnchor.Left, dpi), textLeft);
             else _compactMarquee = null;
@@ -1200,16 +1210,10 @@ public partial class MainWindow
                 Place(CompactRegion(_compactEqualizer, eqW, eqW, layout.EqualizerHeight, row, RegionAnchor.Left, dpi), eqLeft);
             }
             else _compactEqualizer = null;
-            // The left side ends at the block: the cover, the readings, and the clock when it is chosen there. Every
-            // neighbour keeps the same gap, so the clock follows the readings instead of sitting at the window's edge:
-            // a side narrower than the other leaves its spare room at the edge, not between the readings and the clock.
+            // The left side ends at the block: the readings, and the clock when it is chosen there. Every neighbour keeps
+            // the same gap, so the clock follows the readings instead of sitting at the window's edge: a side narrower than
+            // the other leaves its spare room at the edge, not between the readings and the clock.
             double x = blockLeft - unit - leftNeed;
-            if (hasCover)
-            {
-                var cover = MusicVisuals.Cover(_mediaCover, layout.CoverSize, layout.CoverRadius);
-                AutomationProperties.SetName(cover, _mediaTrack!.Caption);
-                Place(CompactRegion(cover, coverW, coverW, coverW, row, RegionAnchor.Left, dpi), x); x += coverW + unit;
-            }
             double leftStart = x;
             x = PlaceReadings(readingsLeft ? 0 : split, readingsLeft ? split : n - split, x, blockLeft - unit);
             if (clock is not null && clockLeft) clockX = x + (x > leftStart ? unit : 0);
@@ -1250,8 +1254,9 @@ public partial class MainWindow
         // The display name (AppEntry.Name: the name the user gave the application, else the source's own), so a renamed application's letter follows.
         return (used, PanelTheme.QuotaTheme(entry), tip, CompactMusicLayout.RingLetterFor(Settings.QuotaRingLetters, entry.Name));
     }).ToArray();
-    // The collapsed equalizer and the music page's share one color; the default follows Windows' own accent color.
-    private Brush EqualizerColor => MusicColor(Settings.EqualizerColor, Settings.EqualizerCustomColor, "textPrimary");
+    // The collapsed equalizer and the music page's share one color: the panel theme's primary text, whatever the settings
+    // once chose (the equalizer's own color pickers were removed; the saved choices are only read so old files load).
+    private Brush EqualizerColor => UI.Brush(PanelTheme.Hex("textPrimary"));
     // The current lyric keeps the theme's primary text now that its color choice is gone.
     private Brush LyricInk => UI.Brush(PanelTheme.Hex("textPrimary"));
     // A color chosen among the clock's swatches, drawn as the theme can show it on its surface. The default swatch follows the

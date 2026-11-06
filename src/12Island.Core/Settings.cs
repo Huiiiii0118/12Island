@@ -311,7 +311,7 @@ public sealed class DeckSettings
     // A first start replaces the default with the Windows display language (SettingsStore.Load); files saved before
     // English existed are Chinese (SettingsMigrations).
     public string Language { get; set; } = Loc.English;
-    public CompactStyle Style { get; set; } = CompactStyle.Notch;
+    public CompactStyle Style { get; set; } = CompactStyle.Capsule;
     // Size and position of each collapsed style in DIPs; limits and defaults are in CollapsedLimits. OffsetX moves the surface
     // from the centre; each monitor narrows the offset to what fits (CollapsedGeometry) without changing the saved value.
     public double NotchWidth { get; set; } = CollapsedLimits.NotchWidthDefault;
@@ -370,15 +370,15 @@ public sealed class DeckSettings
     public bool EqualizerAlways { get; set; }
     // How many bars the collapsed equalizer has, which sets its length (CompactMusicLayout.BarsWidth).
     public int EqualizerBars { get => _equalizerBars; set => _equalizerBars = CompactMusicLayout.SafeBars(value); }
-    // The color of the collapsed equalizer and the music page's, chosen among the clock's swatches: White, the default, follows
-    // the skin's own text color, Cover the playing song's, Custom EqualizerCustomColor. Gradient is not offered and reads as White.
+    // Kept only so settings written before the equalizer's color pickers were removed still load; the equalizer always takes
+    // the panel theme's own text color now (MainWindow.EqualizerColor), and what is saved here is no longer read.
     public ClockColor EqualizerColor { get; set; } = ClockColor.White;
     public string EqualizerCustomColor { get; set; } = ClockColors.DefaultCustom;
     // The notch and the capsule each switch the clock on; its style, color, hour format and seconds are shared.
-    public bool NotchClock { get; set; }
-    public bool CapsuleClock { get; set; }
-    public ClockStyle ClockStyle { get; set; }
-    public ClockColor ClockColor { get; set; }
+    public bool NotchClock { get; set; } = true;
+    public bool CapsuleClock { get; set; } = true;
+    public ClockStyle ClockStyle { get; set; } = ClockStyle.Date;
+    public ClockColor ClockColor { get; set; } = ClockColor.White;
     public string ClockCustomColor { get; set; } = ClockColors.DefaultCustom;
     public List<string> ClockGradient { get; set; } = [.. ClockColors.Sunset];
     public bool Clock24Hour { get; set; } = true;
@@ -438,7 +438,7 @@ public sealed class DeckSettings
     public int AnimationDuration { get; set; } = 360;
     public bool Animations { get; set; } = true;
     public bool ForceTopmost { get; set; }
-    public WindowBehavior Maximized { get; set; } = WindowBehavior.Line;
+    public WindowBehavior Maximized { get; set; } = WindowBehavior.Normal;
     public WindowBehavior Borderless { get; set; } = WindowBehavior.Hide;
     public WindowBehavior Exclusive { get; set; } = WindowBehavior.Hide;
     // Whether a window behind the foreground one counts too: maximized or borderless across the panel's monitor, it calls for

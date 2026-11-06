@@ -48,3 +48,4 @@ dev-docs/
 12Island-*-windows-x64.exe
 # Baidu netdisk upload placeholders
 *.baiduyun.uploading.cfg
+dist-release/
