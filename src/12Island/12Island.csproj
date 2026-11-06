@@ -1,0 +1,70 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <ItemGroup>
+    <ProjectReference Include="..\12Island.Core\12Island.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AvalonEdit" Version="6.3.1.120" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.0" />
+    <PackageReference Include="NAudio.Wasapi" Version="2.2.1" />
+    <PackageReference Include="System.Management" Version="10.0.0" />
+    <PackageReference Include="System.ServiceProcess.ServiceController" Version="10.0.0" />
+    <Resource Include="Assets\Fonts\*.ttf" />
+    <!-- FFmpeg travels inside the program, so sound, video and WebP convert on a machine that never had it installed. It is
+         unpacked once, on first use, into the data folder. -->
+    <EmbeddedResource Include="Assets\ffmpeg\ffmpeg-win64.tgz" LogicalName="12Island.Assets.ffmpeg.tgz" />
+    <Content Include="ThirdPartyNotices.txt" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <StartupObject>TwelveIsland.Program</StartupObject>
+    <!-- The program is named 12Island; its namespace spells the same name out, because a C# name cannot start with a digit. -->
+    <AssemblyName>12Island</AssemblyName>
+    <RootNamespace>TwelveIsland</RootNamespace>
+    <AssemblyTitle>12 island</AssemblyTitle>
+    <Product>12 island</Product>
+    <Company>12</Company>
+    <TargetFramework>net10.0-windows10.0.19041.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UseWPF>true</UseWPF>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\12Island.ico</ApplicationIcon>
+    <Platforms>x64</Platforms>
+    <PlatformTarget>x64</PlatformTarget>
+    <!-- A panel that mostly sits idle: no background collection thread, and a collector that compacts and returns memory rather
+         than keeping room to grow into (see App.Memory.cs). -->
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+  </PropertyGroup>
+  <!-- Gen0MaxBudget: the youngest generation is collected after 4 MB of allocation instead of a budget taken from the processor's
+       cache (12 MB on a 24 MB cache). What the panel allocates while it sits (readings, players) otherwise refills that room within
+       a minute of a trim, and it all counts in the working set; a collection of this generation takes well under a millisecond. -->
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.GC.ConserveMemory" Value="5" />
+    <RuntimeHostConfigurationOption Include="System.GC.Gen0MaxBudget" Value="4194304" />
+  </ItemGroup>
+
+  <Import Project="ReleaseVersion.targets" />
+
+  <!-- Kept for the sensor readings this build ships with: a release passes the hash of the readings helper here, and a build
+       without it reads its sensors straight from the machine. -->
+  <ItemGroup Condition="'$(SensorsSha256)' != ''">
+    <AssemblyMetadata Include="SensorsSha256" Value="$(SensorsSha256)" />
+  </ItemGroup>
+
+  <!-- Published builds ship precompiled code and run it as compiled. With tiered compilation the runtime
+       recompiles hot methods in the background minutes after launch, which showed as CPU bursts when a
+       player or the expanded panel was first used. The framework keeps its own precompiled images
+       (no composite image), and the 24 MB Windows projection stays IL: only a few of its methods are used. -->
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <PublishReadyToRunComposite>false</PublishReadyToRunComposite>
+    <TieredCompilation>false</TieredCompilation>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <PublishReadyToRunExclude Include="Microsoft.Windows.SDK.NET.dll" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,71 @@
+{
+  // The dark look: a near-black surface with white text in three strengths, the wallpaper's own color showing through the
+  // edges. Every color the panel draws is set here; the light theme starts from it and changes what it must.
+  "formatVersion": 1,
+  "id": "dark",
+  "name": "深色",
+  "nameEn": "Dark",
+  "description": "近黑表面配白色文字，边缘留一条极淡的高光，像一块浮在桌面上的玻璃。",
+  "descriptionEn": "A near-black surface with white text and a faint rim of light, like a pane of glass over the desktop.",
+  "author": "",
+  "license": "Apache-2.0",
+  "colors": {
+    "surface": "#0A0A0C",
+    "textPrimary": "#F5F5F7",
+    "textSecondary": "#A6F5F5F7",
+    "textTertiary": "#8CF5F5F7",
+    "accent": "#0A84FF",
+    "onAccent": "#FFFFFF",
+    "danger": "#FF6B6B",
+    "liked": "#FF453A",
+    "clock": "#F5F5F7",
+    "equalizer": "#A6F5F5F7",
+    "hairline": "#1FFFFFFF",
+    "track": "#1FFFFFFF",
+    "ringTrack": "#2EFFFFFF",
+    "fill": "#14FFFFFF",
+    "fillSelected": "#26FFFFFF",
+    "hover": "#14FFFFFF",
+    "pressed": "#2EFFFFFF",
+    "outline": "#2EFFFFFF",
+    "popup": "#1C1C1E",
+    "popupBorder": "#2EFFFFFF",
+    "input": "#151517",
+    "rangeFill": "#3D0A84FF",
+    "coverPlaceholder": "#12FFFFFF",
+    "coverOutline": "#1AFFFFFF",
+    "scrollThumb": "#5A5A60",
+    "rim": "#1AFFFFFF",
+    "shadow": "#000000",
+    "indicator": "#8E8E93",
+    "indicatorProgress": "#55555A",
+    "switchFill": "#14FFFFFF",
+    "seekRail": "#33FFFFFF",
+    "rowDivider": "#12FFFFFF",
+    "rowHover": "#0FFFFFFF",
+    "menuDetail": "#80F5F5F7",
+    "tooltip": "#26262A",
+    "tooltipBorder": "#3DFFFFFF",
+    "bubble": "#2C2C2E",
+    "bubbleBorder": "#1FFFFFFF"
+  },
+  // The preset colors of the application columns. ZCode's navy is lightened just enough to read on black.
+  "apps": {
+    "claude": "#E5A385", "codex": "#98DBB0", "antigravity": "#9CB9FF", "cursor": "#D4D5DF", "zcode": "#4A64A6",
+    "dsh": "#6081DA", "grokBot": "#D4D5DF", "kimi": "#68CDEB", "opencode": "#8E8E93", "manual": "#CC9EED", "other": "#D4D5DF", "warning": "#E5C890", "critical": "#E78284"
+  },
+  "clock": {
+    "style": "minimal", "color": "default",
+    "palette": { "amber": "#FF9F43", "cyan": "#5CE1E6", "pink": "#FF8FB1", "lime": "#E4FF6A" },
+    "gradients": [
+      { "name": "日落", "nameEn": "Sunset", "stops": ["#FFB38A", "#FF7EB3", "#B69CFF"] },
+      { "name": "海洋", "nameEn": "Ocean", "stops": ["#7CF3FF", "#4FA8FF", "#6A6CFF"] },
+      { "name": "极光", "nameEn": "Aurora", "stops": ["#8BFFB0", "#5CE1E6", "#B69CFF"] },
+      { "name": "火焰", "nameEn": "Ember", "stops": ["#FFE27A", "#FF9F43", "#FF5E5E"] },
+      { "name": "霓虹", "nameEn": "Neon", "stops": ["#FF5CF0", "#A66BFF", "#5CE1E6"] }
+    ]
+  },
+  // The color picker's twelve presets.
+  "swatches": ["#E5A385", "#F0B37E", "#E5C890", "#98DBB0", "#7FD1C4", "#9CB9FF", "#B9A8FF", "#E7A0D0", "#E78284", "#D4D5DF", "#8E8E93", "#F5F5F7"],
+  "effects": { "rimWidth": 1, "shadowBlur": 24, "shadowDepth": 8, "shadowOpacity": 0.45, "scanlines": 0 }
+}

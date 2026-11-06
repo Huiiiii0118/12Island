@@ -1,0 +1,40 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!-- WPF displays this adorner for keyboard navigation, not initial or mouse focus. -->
+  <Style x:Key="ControlDialogKeyboardFocus" TargetType="Control">
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Control">
+      <Border Margin="-3" CornerRadius="9" BorderThickness="2" BorderBrush="{DynamicResource SettingsAccent}"/>
+    </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="ControlDialogButton" TargetType="Button">
+    <Setter Property="MinWidth" Value="124"/><Setter Property="Height" Value="36"/>
+    <Setter Property="FontSize" Value="13"/><Setter Property="FontWeight" Value="Medium"/>
+    <Setter Property="Cursor" Value="Hand"/><Setter Property="Padding" Value="14,0"/>
+    <Setter Property="Foreground" Value="{DynamicResource SettingsTextPrimary}"/>
+    <Setter Property="Background" Value="{DynamicResource SettingsInset}"/>
+    <Setter Property="FocusVisualStyle" Value="{StaticResource ControlDialogKeyboardFocus}"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+      <Border x:Name="Chrome" CornerRadius="7" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      </Border>
+      <ControlTemplate.Triggers>
+        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SettingsFillHover}"/></Trigger>
+        <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SettingsFillPressed}"/></Trigger>
+        <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Chrome" Property="Opacity" Value="0.4"/></Trigger>
+      </ControlTemplate.Triggers>
+    </ControlTemplate></Setter.Value></Setter>
+  </Style>
+  <Style x:Key="ControlDialogPrimaryButton" TargetType="Button" BasedOn="{StaticResource ControlDialogButton}">
+    <Setter Property="Foreground" Value="White"/><Setter Property="FontWeight" Value="SemiBold"/>
+    <Setter Property="Background" Value="{DynamicResource SettingsAccentFill}"/>
+    <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="Button">
+      <Border x:Name="Chrome" CornerRadius="7" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+      </Border>
+      <ControlTemplate.Triggers>
+        <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="Chrome" Property="Background" Value="{DynamicResource SettingsAccentHover}"/></Trigger>
+        <Trigger Property="IsPressed" Value="True"><Setter TargetName="Chrome" Property="Opacity" Value="0.8"/></Trigger>
+        <Trigger Property="IsEnabled" Value="False"><Setter TargetName="Chrome" Property="Opacity" Value="0.4"/></Trigger>
+      </ControlTemplate.Triggers>
+    </ControlTemplate></Setter.Value></Setter>
+  </Style>
+</ResourceDictionary>

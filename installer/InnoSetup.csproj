@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Restoring this project downloads the pinned Inno Setup compiler into the NuGet cache. It builds nothing. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageDownload Include="Tools.InnoSetup" Version="[7.1.0]" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,49 @@
+<Project>
+
+  <!-- The version comes from the newest release notes file, releases/<version>.md, so it never has to be edited
+       by hand. A release build passes -p:Version from its tag, which takes precedence. -->
+  <PropertyGroup>
+    <VersionFromReleaseNotes Condition="'$(Version)' == ''">true</VersionFromReleaseNotes>
+  </PropertyGroup>
+
+  <UsingTask TaskName="NewestReleaseVersion" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+    <ParameterGroup>
+      <Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+      <Version ParameterType="System.String" Output="true" />
+    </ParameterGroup>
+    <Task>
+      <Using Namespace="System.Text.RegularExpressions" />
+      <Code Type="Fragment" Language="cs"><![CDATA[
+        // Ordered by major, minor, patch, then alpha < beta < release, then the prerelease number.
+        var pattern = new Regex(@"^(\d+)\.(\d+)\.(\d+)(?:-(alpha|beta)\.(\d+))?$");
+        long[] newest = null;
+        foreach (var file in Files)
+        {
+            var name = file.GetMetadata("Filename");
+            var match = pattern.Match(name);
+            if (!match.Success) continue;
+            var key = new[]
+            {
+                long.Parse(match.Groups[1].Value), long.Parse(match.Groups[2].Value), long.Parse(match.Groups[3].Value),
+                !match.Groups[4].Success ? 2L : match.Groups[4].Value == "beta" ? 1L : 0L,
+                match.Groups[5].Success ? long.Parse(match.Groups[5].Value) : 0L,
+            };
+            var order = 0;
+            for (var i = 0; newest != null && order == 0 && i < key.Length; i++) order = key[i].CompareTo(newest[i]);
+            if (newest == null || order > 0) { newest = key; Version = name; }
+        }
+        if (Version == null) Log.LogError("No release notes named <major>.<minor>.<patch>[-alpha.N|-beta.N].md were found in releases/.");
+      ]]></Code>
+    </Task>
+  </UsingTask>
+
+  <Target Name="SetVersionFromReleaseNotes" BeforeTargets="GetAssemblyVersion" Condition="'$(VersionFromReleaseNotes)' == 'true'">
+    <ItemGroup>
+      <_ReleaseNotesFile Include="$(MSBuildThisFileDirectory)..\..\releases\*.md" />
+    </ItemGroup>
+    <NewestReleaseVersion Files="@(_ReleaseNotesFile)">
+      <Output TaskParameter="Version" PropertyName="Version" />
+    </NewestReleaseVersion>
+  </Target>
+
+</Project>

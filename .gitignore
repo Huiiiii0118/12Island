@@ -1,0 +1,50 @@
+# .NET build output
+[Bb]in/
+[Oo]bj/
+artifacts/
+.artifacts/
+dist/
+
+# Local version-bump snapshot (see scripts/Version-Bump.ps1)
+.version-state.json
+
+# Local environment variables
+.env
+.env.*
+*.env
+!.env.example
+!.env.*.example
+
+# Logs
+*.log
+*.binlog
+[Ll]og/
+[Ll]ogs/
+
+# Editor local history and settings
+.history/
+.localhistory/
+.vscode/
+
+# Operating system temporary files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Local AI assistant instructions and configuration
+CLAUDE.md
+AGENTS.md
+.claude/
+.agents/
+.codex/
+
+# Local design drafts
+output/
+
+# Local development notes: architecture, design decisions, plans, release steps
+dev-docs/
+
+# Release assets are uploaded to GitHub Releases, not the repository
+12Island-*-windows-x64.exe
+# Baidu netdisk upload placeholders
+*.baiduyun.uploading.cfg

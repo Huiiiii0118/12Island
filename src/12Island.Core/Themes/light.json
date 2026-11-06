@@ -1,0 +1,68 @@
+{
+  // The light look: the macOS window grey under dark text, with white pop-ups and the blue accent.
+  "formatVersion": 1,
+  "id": "light",
+  "name": "浅色",
+  "nameEn": "Light",
+  "description": "浅灰白表面配深色文字，白色弹层与蓝色强调色，适合浅色桌面。",
+  "descriptionEn": "A pale grey surface with dark text, white pop-ups and the blue accent, for light desktops.",
+  "author": "",
+  "license": "Apache-2.0",
+  "base": "dark",
+  "colors": {
+    "surface": "#F2F2F5",
+    "textPrimary": "#1D1D1F",
+    "textSecondary": "#A6000000",
+    "textTertiary": "#8F000000",
+    "accent": "#007AFF",
+    "onAccent": "#FFFFFF",
+    "danger": "#D70015",
+    "liked": "#FF2D55",
+    "clock": "#1D1D1F",
+    "equalizer": "#8C000000",
+    "hairline": "#17000000",
+    "track": "#1A000000",
+    "ringTrack": "#24000000",
+    "fill": "#0D000000",
+    "fillSelected": "#1A000000",
+    "hover": "#12000000",
+    "pressed": "#1F000000",
+    "outline": "#26000000",
+    "popup": "#FFFFFF",
+    "popupBorder": "#24000000",
+    "input": "#FFFFFF",
+    "rangeFill": "#33007AFF",
+    "coverPlaceholder": "#0D000000",
+    "coverOutline": "#1A000000",
+    "scrollThumb": "#B0B0B6",
+    "rim": "#1F000000",
+    "shadow": "#000000",
+    "indicator": "#AEAEB2",
+    "indicatorProgress": "#3A3A3C",
+    "switchFill": "#0A000000",
+    "seekRail": "#24000000",
+    "rowDivider": "#0F000000",
+    "rowHover": "#0A000000",
+    "menuDetail": "#8C000000",
+    "tooltip": "#FFFFFF",
+    "tooltipBorder": "#29000000",
+    "bubble": "#FFFFFF",
+    "bubbleBorder": "#24000000"
+  },
+  "apps": {
+    "claude": "#C15F3C", "codex": "#1E8A55", "antigravity": "#3B6FE0", "cursor": "#6E6E78", "zcode": "#3A538D",
+    "dsh": "#4166C9", "grokBot": "#6E6E78", "kimi": "#0A8DAE", "opencode": "#2C2C30", "manual": "#9B51C9", "other": "#6E6E78", "warning": "#9C6A00", "critical": "#D1343B"
+  },
+  "clock": {
+    "style": "minimal", "color": "default",
+    "palette": { "amber": "#A35F00", "cyan": "#0B7A82", "pink": "#B8326F", "lime": "#4C7A00" },
+    "gradients": [
+      { "name": "日落", "nameEn": "Sunset", "stops": ["#B8510F", "#B8326F", "#6E4BD1"] },
+      { "name": "海洋", "nameEn": "Ocean", "stops": ["#0B7A82", "#1F64C8", "#5B4BD1"] },
+      { "name": "极光", "nameEn": "Aurora", "stops": ["#2E7D32", "#0B7A82", "#1F64C8"] },
+      { "name": "火焰", "nameEn": "Ember", "stops": ["#A35F00", "#B8510F", "#C42B38"] },
+      { "name": "霓虹", "nameEn": "Neon", "stops": ["#B02E9E", "#6E4BD1", "#0B7A82"] }
+    ]
+  },
+  "effects": { "rimWidth": 1, "shadowBlur": 22, "shadowDepth": 6, "shadowOpacity": 0.24 }
+}
