@@ -37,6 +37,11 @@ dotnet publish src/12Island/12Island.csproj -c Release -r win-x64 --self-contain
 - 版本号取自 `releases/` 里最新的文件名；`scripts/Version-Bump.ps1` 按源码改动量自动判定下一次是大、中还是小版本，每个版本的改动写在该版本的更新日志里。
 - 安装器与便携包由 `scripts/Publish-Release.ps1` 生成。
 
+## 发布
+
+1. 在 GitHub 上以 `vX.Y.Z` 为 tag 创建 Release，描述使用 `releases/X.Y.Z.md` 的内容；
+2. 上传发布产物 `12Island-X.Y.Z-windows-x64.exe`（应用内自动更新按这个名字识别新版本）。
+
 ## 许可
 
 本项目以 [MIT License](LICENSE) 开源。

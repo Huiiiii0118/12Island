@@ -13,6 +13,10 @@ namespace TwelveIsland;
 
 public partial class App : Application
 {
+    // The open-source home of this program: the update checks and the About page's links both take it from here.
+    public const string RepoOwner = "Huiiiii0118";
+    public const string RepoName = "12Island";
+    public const string RepoUrl = $"https://github.com/{RepoOwner}/{RepoName}";
     private Mutex? _mutex;
     private EventWaitHandle? _settingsEvent;
     private RegisteredWaitHandle? _listener;
@@ -103,7 +107,7 @@ public partial class App : Application
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException) { }
         Prices = new Pricing(folder);
-        Updates = new AppUpdates(new TwelveIsland.Updates.LocalUpdates(), folder);
+        Updates = new AppUpdates(new TwelveIsland.Updates.GitHubUpdates(folder), folder);
         Secrets = new ProviderSecrets(folder);
         Lyrics = new LyricsService(appleLyricsFile: Path.Combine(folder, "apple-music-lyrics.json"));
         Usage = new UsageService(new DesktopSources(), secrets: Secrets, quotaCache: Path.Combine(folder, ClaudeQuotaCache.FileName),

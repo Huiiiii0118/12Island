@@ -52,6 +52,11 @@ dotnet publish src/12Island/12Island.csproj -c Release -r win-x64 --self-contain
   the source changed (major / minor / patch), and each version's changes are written in its release notes file.
 - The installer and the portable package are produced by `scripts/Publish-Release.ps1`.
 
+## Releasing
+
+1. Create a GitHub release with the tag `vX.Y.Z` and the notes from `releases/X.Y.Z.md`;
+2. upload `12Island-X.Y.Z-windows-x64.exe` — the in-app updater recognises a new version by that asset name.
+
 ## License
 
 Released under the [MIT License](LICENSE).

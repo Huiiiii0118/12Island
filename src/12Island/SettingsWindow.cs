@@ -1135,7 +1135,8 @@ public sealed partial class SettingsWindow : Window
         version.Children.Add(notes);
         Group(Row(Loc.T("作者", "Author"), TextLine("12", 12, TextSecondary)),
             Row(Loc.T("当前版本", "Current version"),version),
-            Row(Loc.T("许可证", "License"), TextLine("MIT License", 12, TextSecondary)));
+            Row(Loc.T("许可证", "License"), Link("MIT License", App.RepoUrl + "/blob/main/LICENSE")),
+            Row(Loc.T("项目主页", "Project"), Link($"{App.RepoOwner}/{App.RepoName}", App.RepoUrl)));
     }
 
     // External links are plain text, so their right edge lines up with the values in the rows above.
